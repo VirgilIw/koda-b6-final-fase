@@ -35,6 +35,17 @@ func getUserID(ctx *gin.Context) (int, error) {
 }
 
 // GetAllShortLinks godoc
+// @Summary Get all short links
+// @Description Get paginated short links for authenticated user
+// @Tags Links
+// @Security BearerAuth
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Limit per page" default(4)
+// @Success 200 {object} dto.LinksResponse "Links fetched successfully"
+// @Failure 401 {object} dto.LinksResponse "Unauthorized"
+// @Failure 500 {object} dto.LinksResponse "Internal server error"
+// @Router /api/links [get]
 func (c *LinksController) GetAllShortLinks(ctx *gin.Context) {
 	userID, err := getUserID(ctx)
 	if err != nil {
@@ -82,6 +93,19 @@ func (c *LinksController) GetAllShortLinks(ctx *gin.Context) {
 }
 
 // CreateShortLink godoc
+// @Summary Create short link
+// @Description Create a new short link for authenticated user
+// @Tags Links
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body dto.ShortLinksRequest true "Short Link Request"
+// @Success 201 {object} dto.LinksResponse "Link created successfully"
+// @Failure 400 {object} dto.LinksResponse "Invalid request body"
+// @Failure 401 {object} dto.LinksResponse "Unauthorized"
+// @Failure 409 {object} dto.LinksResponse "Slug already taken"
+// @Failure 500 {object} dto.LinksResponse "Internal server error"
+// @Router /api/links [post]
 func (c *LinksController) CreateShortLink(ctx *gin.Context) {
 	var req dto.ShortLinksRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -130,6 +154,16 @@ func (c *LinksController) CreateShortLink(ctx *gin.Context) {
 }
 
 // Redirect godoc
+// @Summary Redirect to original URL
+// @Description Redirect user to original URL using slug (requires authentication)
+// @Tags Links
+// @Security BearerAuth
+// @Param slug path string true "Short link slug"
+// @Success 302 "Redirect to original URL"
+// @Failure 401 {object} dto.LinksResponse "Unauthorized"
+// @Failure 404 {object} dto.LinksResponse "Link not found"
+// @Failure 500 {object} dto.LinksResponse "Internal server error"
+// @Router /r/{slug} [get]
 func (c *LinksController) Redirect(ctx *gin.Context) {
 	slug := ctx.Param("slug")
 
