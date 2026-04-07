@@ -20,15 +20,15 @@ func NewAuthController(service *service.AuthService) *AuthController {
 
 // Register godoc
 // @Summary Register user
-// @Description Register user
+// @Description Register a new user account
 // @Tags Authentication
 // @Accept json
 // @Produce json
 // @Param request body dto.AuthRegisterRequest true "Register Request"
-// @Success 201 {object} dto.AuthRegisterResponse
-// @Failure 400 {object} dto.AuthRegisterResponse
-// @Failure 409 {object} dto.AuthRegisterResponse
-// @Failure 500 {object} dto.AuthRegisterResponse
+// @Success 201 {object} dto.AuthRegisterResponse "Register success"
+// @Failure 400 {object} dto.AuthRegisterResponse "Invalid input / validation error"
+// @Failure 409 {object} dto.AuthRegisterResponse "Email already exists"
+// @Failure 500 {object} dto.AuthRegisterResponse "Internal server error"
 // @Router /api/register [post]
 func (a *AuthController) Register(ctx *gin.Context) {
 	var req dto.AuthRegisterRequest
