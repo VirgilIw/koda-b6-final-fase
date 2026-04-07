@@ -40,36 +40,42 @@ export default function LoginPage() {
 
       localStorage.setItem("token", data.token);
 
-      // ✅ SUCCESS
       setForm((prev) => ({
         ...prev,
         success: true,
       }));
-
-      // optional redirect
-      // setTimeout(() => {
-      //   window.location.href = "/dashboard";
-      // }, 1000);
-
     } catch (err) {
-      setForm((prev) => ({
-        ...prev,
-        error: err.message,
-      }));
+      setForm((prev) => ({ ...prev, error: err.message }));
     } finally {
-      setForm((prev) => ({
-        ...prev,
-        loading: false,
-      }));
+      setForm((prev) => ({ ...prev, loading: false }));
     }
   };
+
+  React.useEffect(() => {
+    if (form.success) {
+      const timer = setTimeout(() => {
+        setForm((prev) => ({
+          ...prev,
+          success: false,
+        }));
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [form.success]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-gray-100 via-gray-200 to-gray-100">
       <div className="absolute top-6 left-8 text-sm text-gray-400">
         Login Page
       </div>
-
+      {form.success && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="rounded-xl bg-white px-6 py-4 text-sm font-medium text-green-600 shadow-lg">
+            Login berhasil!
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
         <h1 className="mb-6 text-center text-xl font-semibold text-gray-800">
           ShortLink
@@ -82,16 +88,7 @@ export default function LoginPage() {
 
         {/* ERROR */}
         {form.error && (
-          <div className="mb-4 text-sm text-red-500">
-            {form.error}
-          </div>
-        )}
-
-        {/* SUCCESS */}
-        {form.success && (
-          <div className="mb-4 text-sm text-green-500">
-            Login berhasil!
-          </div>
+          <div className="mb-4 text-sm text-red-500">{form.error}</div>
         )}
 
         {/* Email */}
@@ -162,9 +159,7 @@ export default function LoginPage() {
         {/* Divider */}
         <div className="my-5 flex items-center">
           <div className="grow border-t border-gray-200" />
-          <span className="mx-3 text-xs text-gray-400">
-            OR CONTINUE WITH
-          </span>
+          <span className="mx-3 text-xs text-gray-400">OR CONTINUE WITH</span>
           <div className="grow border-t border-gray-200" />
         </div>
 
