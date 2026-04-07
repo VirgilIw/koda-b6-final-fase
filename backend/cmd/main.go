@@ -10,7 +10,7 @@ import (
 	"github.com/virgilIw/koda-b6-final-fase/docs"
 	"github.com/virgilIw/koda-b6-final-fase/internal/config"
 	"github.com/virgilIw/koda-b6-final-fase/internal/di"
-	"github.com/virgilIw/koda-b6-final-fase/router"
+	"github.com/virgilIw/koda-b6-final-fase/internal/router"
 )
 
 // @securityDefinitions.apikey BearerAuth
