@@ -40,6 +40,11 @@ func isValidPassword(pass string) bool {
 }
 
 func (a *AuthService) Register(ctx context.Context, req dto.AuthRegisterRequest) error {
+
+	if req.Password != req.ConfirmPassword {
+		return errors.New("password and confirm password must be same")
+	}
+
 	if !isValidPassword(req.Password) {
 		return errors.New("password must contain at least 1 uppercase letter and 1 number")
 	}
