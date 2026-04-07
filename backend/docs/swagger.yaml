@@ -17,7 +17,7 @@ definitions:
       message:
         type: string
       result:
-        $ref: '#/definitions/dto.LoginResponse'
+        $ref: '#/definitions/dto.LoginAllData'
       success:
         type: boolean
     type: object
@@ -41,14 +41,33 @@ definitions:
       success:
         type: boolean
     type: object
-  dto.LoginResponse:
+  dto.LinksResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+      result: {}
+      success:
+        type: boolean
+    type: object
+  dto.LoginAllData:
     properties:
       token:
         type: string
       user:
-        $ref: '#/definitions/dto.ResponseUser'
+        $ref: '#/definitions/dto.UserData'
     type: object
-  dto.ResponseUser:
+  dto.ShortLinksRequest:
+    properties:
+      original_url:
+        type: string
+      slug:
+        type: string
+    required:
+    - original_url
+    type: object
+  dto.UserData:
     properties:
       email:
         type: string
@@ -101,6 +120,79 @@ paths:
       summary: Get user by email
       tags:
       - Users
+  /api/links:
+    get:
+      description: Get paginated short links for authenticated user
+      parameters:
+      - description: Page number
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        example: 4
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of short links
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all short links
+      tags:
+      - Links
+    post:
+      consumes:
+      - application/json
+      description: Create a short URL from original URL (optionally with custom slug)
+      parameters:
+      - description: Original URL and optional custom slug
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ShortLinksRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+      security:
+      - BearerAuth: []
+      summary: Create short link
+      tags:
+      - Links
   /api/login:
     post:
       consumes:
@@ -165,6 +257,29 @@ paths:
       summary: Register user
       tags:
       - Authentication
+  /r/{slug}:
+    get:
+      description: Redirect user to the original URL using slug
+      parameters:
+      - description: Short link slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "302":
+          description: Redirect to original URL
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+      summary: Redirect to original URL
+      tags:
+      - Links
 securityDefinitions:
   BearerAuth:
     description: 'Masukkan token dengan format: Bearer <token>'
