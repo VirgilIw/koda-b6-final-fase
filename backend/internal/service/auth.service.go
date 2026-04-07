@@ -11,12 +11,14 @@ import (
 )
 
 type AuthService struct {
-	repo *repository.AuthRepository
+	repo     *repository.AuthRepository
+	repoUser *repository.UserRepository
 }
 
-func NewAuthService(repo *repository.AuthRepository) *AuthService {
+func NewAuthService(repo *repository.AuthRepository, repoUser *repository.UserRepository) *AuthService {
 	return &AuthService{
-		repo: repo,
+		repo:     repo,
+		repoUser: repoUser,
 	}
 }
 
@@ -54,4 +56,28 @@ func (a *AuthService) Register(ctx context.Context, req dto.AuthRegisterRequest)
 	}
 
 	return nil
+}
+
+func (a *AuthService) Login(ctx context.Context, req dto.AuthLoginRequest) (dto.LoginAllData, error) {
+	user, err := a.repoUser.GetByEmail(ctx, req.Email)
+	if err != nil {
+		return dto.LoginAllData{}, errors.New("invalid email or password")
+	}
+
+	if !lib.VerifyPassword(req.Password, user.Password) {
+		return dto.LoginAllData{}, errors.New("invalid email or password")
+	}
+
+	token, err := lib.GenerateToken(user.Id, user.Email)
+	if err != nil {
+		return dto.LoginAllData{}, err
+	}
+
+	return dto.LoginAllData{
+		Token: token,
+		User: dto.UserData{
+			Id:    user.Id,
+			Email: user.Email,
+		},
+	}, nil
 }
