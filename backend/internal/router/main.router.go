@@ -9,10 +9,15 @@ import (
 )
 
 func RouterMain(app *gin.Engine, c *di.Container) {
-	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
+	// middleware global harus PERTAMA
 	app.Use(middleware.CorsMiddleware())
 
-	RouterAuth(app, c)
-	RouterUser(app, c)
+	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	app.GET("/r/:slug", c.LinksController().Redirect)
+
+	api := app.Group("/api")
+
+	RouterAuth(api, c)
+	RouterUser(api, c)
+	RouterLinks(api, c)
 }
