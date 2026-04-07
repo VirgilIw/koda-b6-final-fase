@@ -34,8 +34,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed connect database: %v", err)
 	}
+	rdb := config.InitRedis()
 
-	container := di.NewContainer(db)
+	container := di.NewContainer(db, rdb)
 	router.RouterMain(app, container)
 
 	port := os.Getenv("PORT")
