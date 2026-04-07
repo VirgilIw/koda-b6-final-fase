@@ -23,12 +23,14 @@ definitions:
     type: object
   dto.AuthRegisterRequest:
     properties:
+      confirmPassword:
+        type: string
       email:
         type: string
       password:
-        minLength: 6
         type: string
     required:
+    - confirmPassword
     - email
     - password
     type: object
@@ -124,13 +126,13 @@ paths:
     get:
       description: Get paginated short links for authenticated user
       parameters:
-      - description: Page number
-        example: 1
+      - default: 1
+        description: Page number
         in: query
         name: page
         type: integer
-      - description: Number of items per page
-        example: 4
+      - default: 4
+        description: Limit per page
         in: query
         name: limit
         type: integer
@@ -138,7 +140,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: List of short links
+          description: Links fetched successfully
           schema:
             $ref: '#/definitions/dto.LinksResponse'
         "401":
@@ -157,9 +159,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a short URL from original URL (optionally with custom slug)
+      description: Create a new short link for authenticated user
       parameters:
-      - description: Original URL and optional custom slug
+      - description: Short Link Request
         in: body
         name: request
         required: true
@@ -169,11 +171,11 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Link created successfully
           schema:
             $ref: '#/definitions/dto.LinksResponse'
         "400":
-          description: Bad Request
+          description: Invalid request body
           schema:
             $ref: '#/definitions/dto.LinksResponse'
         "401":
@@ -181,11 +183,11 @@ paths:
           schema:
             $ref: '#/definitions/dto.LinksResponse'
         "409":
-          description: Conflict
+          description: Slug already taken
           schema:
             $ref: '#/definitions/dto.LinksResponse'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/dto.LinksResponse'
       security:
@@ -227,7 +229,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Register user
+      description: Register a new user account
       parameters:
       - description: Register Request
         in: body
@@ -239,19 +241,19 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Register success
           schema:
             $ref: '#/definitions/dto.AuthRegisterResponse'
         "400":
-          description: Bad Request
+          description: Invalid input / validation error
           schema:
             $ref: '#/definitions/dto.AuthRegisterResponse'
         "409":
-          description: Conflict
+          description: Email already exists
           schema:
             $ref: '#/definitions/dto.AuthRegisterResponse'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/dto.AuthRegisterResponse'
       summary: Register user
@@ -259,24 +261,30 @@ paths:
       - Authentication
   /r/{slug}:
     get:
-      description: Redirect user to the original URL using slug
+      description: Redirect user to original URL using slug (requires authentication)
       parameters:
       - description: Short link slug
         in: path
         name: slug
         required: true
         type: string
-      produces:
-      - text/plain
       responses:
         "302":
           description: Redirect to original URL
-          schema:
-            type: string
-        "404":
-          description: Not Found
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/dto.LinksResponse'
+        "404":
+          description: Link not found
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+      security:
+      - BearerAuth: []
       summary: Redirect to original URL
       tags:
       - Links

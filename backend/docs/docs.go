@@ -83,22 +83,22 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "example": 1,
+                        "default": 1,
                         "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "example": 4,
-                        "description": "Number of items per page",
+                        "default": 4,
+                        "description": "Limit per page",
                         "name": "limit",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of short links",
+                        "description": "Links fetched successfully",
                         "schema": {
                             "$ref": "#/definitions/dto.LinksResponse"
                         }
@@ -123,7 +123,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a short URL from original URL (optionally with custom slug)",
+                "description": "Create a new short link for authenticated user",
                 "consumes": [
                     "application/json"
                 ],
@@ -136,7 +136,7 @@ const docTemplate = `{
                 "summary": "Create short link",
                 "parameters": [
                     {
-                        "description": "Original URL and optional custom slug",
+                        "description": "Short Link Request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -147,13 +147,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Link created successfully",
                         "schema": {
                             "$ref": "#/definitions/dto.LinksResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid request body",
                         "schema": {
                             "$ref": "#/definitions/dto.LinksResponse"
                         }
@@ -165,13 +165,13 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "Slug already taken",
                         "schema": {
                             "$ref": "#/definitions/dto.LinksResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/dto.LinksResponse"
                         }
@@ -227,7 +227,7 @@ const docTemplate = `{
         },
         "/api/register": {
             "post": {
-                "description": "Register user",
+                "description": "Register a new user account",
                 "consumes": [
                     "application/json"
                 ],
@@ -251,25 +251,25 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Register success",
                         "schema": {
                             "$ref": "#/definitions/dto.AuthRegisterResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input / validation error",
                         "schema": {
                             "$ref": "#/definitions/dto.AuthRegisterResponse"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "Email already exists",
                         "schema": {
                             "$ref": "#/definitions/dto.AuthRegisterResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/dto.AuthRegisterResponse"
                         }
@@ -279,10 +279,12 @@ const docTemplate = `{
         },
         "/r/{slug}": {
             "get": {
-                "description": "Redirect user to the original URL using slug",
-                "produces": [
-                    "text/plain"
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
                 ],
+                "description": "Redirect user to original URL using slug (requires authentication)",
                 "tags": [
                     "Links"
                 ],
@@ -298,13 +300,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "302": {
-                        "description": "Redirect to original URL",
+                        "description": "Redirect to original URL"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.LinksResponse"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Link not found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LinksResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/dto.LinksResponse"
                         }
@@ -350,16 +361,19 @@ const docTemplate = `{
         "dto.AuthRegisterRequest": {
             "type": "object",
             "required": [
+                "confirmPassword",
                 "email",
                 "password"
             ],
             "properties": {
+                "confirmPassword": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
                 "password": {
-                    "type": "string",
-                    "minLength": 6
+                    "type": "string"
                 }
             }
         },
