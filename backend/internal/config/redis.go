@@ -29,11 +29,10 @@ func InitRedis() *redis.Client {
 		DB:       0,
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-
 	defer cancel()
 
 	if err := rdb.Ping(ctx).Err(); err != nil {
-		panic(fmt.Sprintf("failed to connect redis: %v", err))
+		panic(err)
 	}
 
 	return rdb
