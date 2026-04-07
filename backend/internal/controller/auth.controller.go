@@ -29,7 +29,7 @@ func NewAuthController(service *service.AuthService) *AuthController {
 // @Failure 400 {object} dto.AuthRegisterResponse
 // @Failure 409 {object} dto.AuthRegisterResponse
 // @Failure 500 {object} dto.AuthRegisterResponse
-// @Router /auth/register [post]
+// @Router /api/register [post]
 func (a *AuthController) Register(ctx *gin.Context) {
 	var req dto.AuthRegisterRequest
 
@@ -57,4 +57,46 @@ func (a *AuthController) Register(ctx *gin.Context) {
 		Message: "register success",
 	})
 
+}
+
+// Login godoc
+// @Summary Login user
+// @Description Authenticate user with email and password
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body dto.AuthLoginRequest true "Login Request"
+// @Success 200 {object} dto.AuthLoginResponse
+// @Failure 400 {object} dto.AuthLoginResponse
+// @Failure 401 {object} dto.AuthLoginResponse
+// @Router /api/login [post]
+func (h *AuthController) Login(c *gin.Context) {
+	var req dto.AuthLoginRequest
+
+	// bind request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.AuthLoginResponse{
+			Success: false,
+			Message: "bad request",
+		})
+		return
+	}
+
+	// call service
+	result, err := h.service.Login(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, dto.AuthLoginResponse{
+			Success: false,
+			Message: "unauthorized",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// success response
+	c.JSON(http.StatusOK, dto.AuthLoginResponse{
+		Success: true,
+		Message: "Login successful",
+		Result:  result,
+	})
 }
