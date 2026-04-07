@@ -4,13 +4,15 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	"github.com/virgilIw/koda-b6-final-fase/internal/controller"
 	"github.com/virgilIw/koda-b6-final-fase/internal/repository"
 	"github.com/virgilIw/koda-b6-final-fase/internal/service"
 )
 
 type Container struct {
-	db *pgxpool.Pool
+	db  *pgxpool.Pool
+	rdb *redis.Client
 
 	authRepo       *repository.AuthRepository
 	authService    *service.AuthService
@@ -25,9 +27,10 @@ type Container struct {
 	linksController *controller.LinksController
 }
 
-func NewContainer(db *pgxpool.Pool) *Container {
+func NewContainer(db *pgxpool.Pool, rdb *redis.Client) *Container {
 	container := &Container{
-		db: db,
+		db:  db,
+		rdb: rdb,
 	}
 
 	container.initDependencies()
@@ -49,7 +52,7 @@ func (c *Container) initDependencies() {
 
 	baseURL := port
 
-	c.linksRepo = repository.NewLinksRepository(c.db)
+	c.linksRepo = repository.NewLinksRepository(c.db, c.rdb)
 	c.linksService = service.NewLinksService(c.linksRepo, baseURL)
 	c.linksController = controller.NewLinksController(c.linksService)
 }
