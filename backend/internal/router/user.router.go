@@ -5,9 +5,8 @@ import (
 	"github.com/virgilIw/koda-b6-final-fase/internal/di"
 )
 
-func RouterUser(app *gin.Engine, c *di.Container) {
-	auth := app.Group("/users")
-	handler := c.UserController()
+func RouterUser(app *gin.RouterGroup, c *di.Container) {
+	controller := c.UserController()
 
-	auth.GET("/email/:email", handler.GetByEmail)
+	app.GET("/email/:email", controller.GetByEmail)
 }
