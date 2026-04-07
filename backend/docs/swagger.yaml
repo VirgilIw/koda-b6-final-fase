@@ -1,4 +1,26 @@
 definitions:
+  dto.AuthLoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.AuthLoginResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+      result:
+        $ref: '#/definitions/dto.LoginResponse'
+      success:
+        type: boolean
+    type: object
   dto.AuthRegisterRequest:
     properties:
       email:
@@ -19,10 +41,97 @@ definitions:
       success:
         type: boolean
     type: object
+  dto.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/dto.ResponseUser'
+    type: object
+  dto.ResponseUser:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+    type: object
+  dto.UserResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+      result: {}
+      success:
+        type: boolean
+    type: object
 info:
   contact: {}
 paths:
-  /auth/register:
+  /api/email/{email}:
+    get:
+      consumes:
+      - application/json
+      description: Get user data based on email
+      parameters:
+      - description: User Email
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+      summary: Get user by email
+      tags:
+      - Users
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email and password
+      parameters:
+      - description: Login Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuthLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AuthLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.AuthLoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.AuthLoginResponse'
+      summary: Login user
+      tags:
+      - Authentication
+  /api/register:
     post:
       consumes:
       - application/json

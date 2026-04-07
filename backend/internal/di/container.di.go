@@ -13,6 +13,10 @@ type Container struct {
 	authRepo       *repository.AuthRepository
 	authService    *service.AuthService
 	authController *controller.AuthController
+
+	userRepo       *repository.UserRepository
+	userService    *service.UserService
+	userController *controller.UserController
 }
 
 func NewContainer(db *pgxpool.Pool) *Container {
@@ -25,11 +29,19 @@ func NewContainer(db *pgxpool.Pool) *Container {
 }
 
 func (c *Container) initDependencies() {
+	c.userRepo = repository.NewUserRepository(c.db)
+	c.userService = service.NewUserService(c.userRepo)
+	c.userController = controller.NewUserController(c.userService)
+
 	c.authRepo = repository.NewAuthRepository(c.db)
-	c.authService = service.NewAuthService(c.authRepo)
+	c.authService = service.NewAuthService(c.authRepo, c.userRepo)
 	c.authController = controller.NewAuthController(c.authService)
 }
 
 func (c *Container) AuthController() *controller.AuthController {
 	return c.authController
+}
+
+func (c *Container) UserController() *controller.UserController {
+	return c.userController
 }
