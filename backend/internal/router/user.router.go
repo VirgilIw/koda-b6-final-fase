@@ -13,4 +13,5 @@ func RouterUser(app *gin.RouterGroup, c *di.Container) {
 
 	users.GET("/email/:email", controller.GetByEmail)
 	users.GET("/me", controller.GetUserByID)
+	users.PATCH("/image", controller.UpdateUserImage)
 }
