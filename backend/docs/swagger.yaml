@@ -292,7 +292,7 @@ paths:
       - Users
   /r/{slug}:
     get:
-      description: Redirect user to original URL using slug (requires authentication)
+      description: Redirect user to original URL using slug and increment click count
       parameters:
       - description: Short link slug
         in: path
@@ -314,8 +314,6 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/dto.LinksResponse'
-      security:
-      - BearerAuth: []
       summary: Redirect to original URL
       tags:
       - Links

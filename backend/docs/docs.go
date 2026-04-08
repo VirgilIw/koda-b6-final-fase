@@ -330,12 +330,7 @@ const docTemplate = `{
         },
         "/r/{slug}": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Redirect user to original URL using slug (requires authentication)",
+                "description": "Redirect user to original URL using slug and increment click count",
                 "tags": [
                     "Links"
                 ],
