@@ -261,6 +261,41 @@ paths:
       summary: Get user by email
       tags:
       - Users
+  /api/users/image:
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Update profile image for authenticated user
+      parameters:
+      - description: User image file
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user image
+      tags:
+      - Users
   /api/users/me:
     get:
       consumes:
