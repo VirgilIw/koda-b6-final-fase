@@ -7,6 +7,8 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    showPassword: false,
+    showConfirmPassword: false,
     loading: false,
     error: null,
     success: false,
@@ -154,7 +156,7 @@ export default function RegisterPage() {
 
             <div className="relative">
               <input
-                type={form.confirmPassword ? "text" : "password"}
+                type={form.showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={form.confirmPassword}
                 onChange={(e) =>
@@ -176,7 +178,7 @@ export default function RegisterPage() {
                 }
                 className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400"
               >
-                {form.confirmPassword ? (
+                {form.showConfirmPassword ? (
                   <EyeOff size={16} />
                 ) : (
                   <Eye size={16} />
