@@ -19,6 +19,34 @@ func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	}
 }
 
+func (u *UserRepository) GetUserByID(ctx context.Context, id int) (model.UserById, error) {
+	query := `
+		SELECT
+			id,
+			COALESCE(NULLIF(name, ''), '') AS name,
+			email,
+			password,
+			COALESCE(NULLIF(image, ''), '') AS image,
+			created_at,
+			updated_at
+		FROM users
+		WHERE id = $1;
+		`
+
+	rows, err := u.db.Query(ctx, query, id)
+
+	if err != nil {
+		return model.UserById{}, err
+	}
+
+	result, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[model.UserById])
+
+	if err != nil {
+		return model.UserById{}, err
+	}
+	return result, err
+}
+
 func (u *UserRepository) GetByEmail(ctx context.Context, email string) (model.User, error) {
 	query := `
 		SELECT 
