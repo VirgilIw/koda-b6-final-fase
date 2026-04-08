@@ -89,39 +89,6 @@ definitions:
 info:
   contact: {}
 paths:
-  /api/email/{email}:
-    get:
-      consumes:
-      - application/json
-      description: Get user data based on email
-      parameters:
-      - description: User Email
-        in: path
-        name: email
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.UserResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.UserResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.UserResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.UserResponse'
-      summary: Get user by email
-      tags:
-      - Users
   /api/links:
     get:
       description: Get paginated short links for authenticated user
@@ -259,6 +226,70 @@ paths:
       summary: Register user
       tags:
       - Authentication
+  /api/users/email/{email}:
+    get:
+      consumes:
+      - application/json
+      description: Get user data based on email
+      parameters:
+      - description: User Email
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user by email
+      tags:
+      - Users
+  /api/users/me:
+    get:
+      consumes:
+      - application/json
+      description: Get logged-in user data from JWT
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - Users
   /r/{slug}:
     get:
       description: Redirect user to original URL using slug (requires authentication)
