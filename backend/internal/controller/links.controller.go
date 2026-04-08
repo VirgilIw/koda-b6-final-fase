@@ -155,9 +155,8 @@ func (c *LinksController) CreateShortLink(ctx *gin.Context) {
 
 // Redirect godoc
 // @Summary Redirect to original URL
-// @Description Redirect user to original URL using slug (requires authentication)
+// @Description Redirect user to original URL using slug and increment click count
 // @Tags Links
-// @Security BearerAuth
 // @Param slug path string true "Short link slug"
 // @Success 302 "Redirect to original URL"
 // @Failure 401 {object} dto.LinksResponse "Unauthorized"
@@ -167,7 +166,7 @@ func (c *LinksController) CreateShortLink(ctx *gin.Context) {
 func (c *LinksController) Redirect(ctx *gin.Context) {
 	slug := ctx.Param("slug")
 
-	link, err := c.service.GetShortLinks(ctx.Request.Context(), slug)
+	link, err := c.service.GetAndIncrement(ctx.Request.Context(), slug)
 	if err != nil {
 		if errors.Is(err, customerrors.ErrLinkNotFound) {
 			ctx.JSON(http.StatusNotFound, dto.LinksResponse{
@@ -177,16 +176,6 @@ func (c *LinksController) Redirect(ctx *gin.Context) {
 			})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, dto.LinksResponse{
-			Success: false,
-			Message: "internal server error",
-			Error:   err.Error(),
-		})
-		return
-	}
-
-	// FIX: pakai request context
-	if err = c.service.IncrementClick(ctx.Request.Context(), link.ID); err != nil {
 		ctx.JSON(http.StatusInternalServerError, dto.LinksResponse{
 			Success: false,
 			Message: "internal server error",
