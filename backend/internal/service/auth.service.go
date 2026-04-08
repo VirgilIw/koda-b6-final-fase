@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"unicode"
 
 	"github.com/virgilIw/koda-b6-final-fase/internal/dto"
@@ -65,10 +66,12 @@ func (a *AuthService) Register(ctx context.Context, req dto.AuthRegisterRequest)
 
 func (a *AuthService) Login(ctx context.Context, req dto.AuthLoginRequest) (dto.LoginAllData, error) {
 	user, err := a.repoUser.GetByEmail(ctx, req.Email)
+	fmt.Println("ERROR GET USER:", err)
 	if err != nil {
 		return dto.LoginAllData{}, errors.New("invalid email or password")
 	}
-
+	fmt.Println("INPUT PASS:", req.Password)
+	fmt.Println("DB PASS:", user.Password)
 	if !lib.VerifyPassword(req.Password, user.Password) {
 		return dto.LoginAllData{}, errors.New("invalid email or password")
 	}
