@@ -58,3 +58,31 @@ func (u *UserService) GetByEmail(ctx context.Context, email string) (dto.UserDto
 	}
 	return result, nil
 }
+
+func (s *UserService) UpdateUserImage(
+	ctx context.Context,
+	userID int,
+	imagePath string,
+) (dto.ImageResponse, error) {
+
+	if userID == 0 {
+		return dto.ImageResponse{}, errors.New("invalid user id")
+	}
+
+	if imagePath == "" {
+		return dto.ImageResponse{}, errors.New("image path is required")
+	}
+
+	// call repository (return model)
+	user, err := s.repo.UpdateUserImage(ctx, userID, imagePath)
+	if err != nil {
+		return dto.ImageResponse{}, err
+	}
+
+	response := dto.ImageResponse{
+		ID:        user.Id,
+		ImagePath: user.Image,
+	}
+
+	return response, nil
+}

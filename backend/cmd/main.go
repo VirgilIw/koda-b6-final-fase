@@ -28,7 +28,7 @@ func main() {
 	_ = godotenv.Load()
 
 	app := gin.Default()
-
+	app.Static("/images", "./uploads")
 	db, err := config.InitDB()
 
 	if err != nil {
