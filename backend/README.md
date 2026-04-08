@@ -89,18 +89,18 @@ backend/
 Create a `.env` file inside the `backend/` folder based on `.env.example`:
 
 ```env
-PORT=8888
-APP_URL=http://localhost:8888
+PORT=
+APP_URL=
 
-DB_HOST=localhost
-DB_PORT=5432
+DB_HOST=
+DB_PORT=
 DB_USERNAME=postgres
 DB_PASSWORD=yourpassword
-DB_NAME=shortlink
-DB_SSLMODE=disable
+DB_NAME=
+DB_SSLMODE=
 
-REDIS_HOST=localhost
-REDIS_PORT=6379
+REDIS_HOST=
+REDIS_PORT=
 REDIS_PASSWORD=
 
 SECRET_KEY=your_jwt_secret_key
