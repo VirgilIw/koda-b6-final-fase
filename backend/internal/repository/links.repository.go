@@ -47,23 +47,37 @@ func (r *LinksRepository) CreateShortLinks(ctx context.Context, userID int, orig
 	if r.rdb != nil {
 		keys, _ := r.rdb.Keys(ctx, fmt.Sprintf("links:user:%d:*", userID)).Result()
 		if len(keys) > 0 {
+			fmt.Println("DELETING CACHE KEYS:", keys)
 			r.rdb.Del(ctx, keys...)
 		}
 	}
 
 	return link, nil
 }
-
 func (r *LinksRepository) GetAllShortLinks(ctx context.Context, userID int, limit, offset int) ([]model.Link, error) {
+
 	cachedKey := fmt.Sprintf("links:user:%d:limit:%d:offset:%d", userID, limit, offset)
+
+	if r.rdb == nil {
+		fmt.Println("REDIS NOT INITIALIZED ❌")
+	} else {
+		fmt.Println("REDIS READY")
+		fmt.Println("CHECK REDIS KEY:", cachedKey)
+	}
 
 	if r.rdb != nil {
 		valueCache, err := r.rdb.Get(ctx, cachedKey).Result()
 		if err == nil {
 			var links []model.Link
 			if err := json.Unmarshal([]byte(valueCache), &links); err == nil {
+				fmt.Println("[CACHE HIT]")
+				fmt.Println("USER ID:", userID)
+				fmt.Println("LIMIT:", limit, "OFFSET:", offset)
+				fmt.Println("TOTAL LINKS:", len(links))
 				return links, nil
 			}
+		} else {
+			fmt.Println("REDIS GET ERROR:", err)
 		}
 	}
 
@@ -86,9 +100,21 @@ func (r *LinksRepository) GetAllShortLinks(ctx context.Context, userID int, limi
 		return nil, fmt.Errorf("GetAllShortLinks collect: %w", err)
 	}
 
-	if r.rdb != nil {
-		if data, err := json.Marshal(links); err == nil {
-			r.rdb.Set(ctx, cachedKey, data, time.Minute*15)
+	fmt.Println("[DB RESULT]")
+	fmt.Println("USER ID:", userID)
+	fmt.Println("TOTAL LINKS FROM DB:", len(links))
+
+	if r.rdb != nil && len(links) > 0 {
+		data, err := json.Marshal(links)
+		if err != nil {
+			fmt.Println("JSON MARSHAL ERROR:", err)
+		} else {
+			err := r.rdb.Set(ctx, cachedKey, data, time.Hour).Err()
+			if err != nil {
+				fmt.Println("REDIS SET ERROR:", err)
+			} else {
+				fmt.Println("[CACHE SAVED]")
+			}
 		}
 	}
 
