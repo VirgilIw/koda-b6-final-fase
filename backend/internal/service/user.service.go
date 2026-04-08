@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/virgilIw/koda-b6-final-fase/internal/customerrors"
 	"github.com/virgilIw/koda-b6-final-fase/internal/dto"
 	"github.com/virgilIw/koda-b6-final-fase/internal/repository"
 )
@@ -16,6 +18,27 @@ func NewUserService(repo *repository.UserRepository) *UserService {
 	return &UserService{
 		repo: repo,
 	}
+}
+
+func (u *UserService) GetUserByID(ctx context.Context, id int) (dto.UserById, error) {
+	data, err := u.repo.GetUserByID(ctx, id)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return dto.UserById{}, customerrors.ErrUserNotFound
+		}
+		return dto.UserById{}, err
+	}
+
+	result := dto.UserById{
+		Id:        data.Id,
+		Name:      data.Name,
+		Email:     data.Email,
+		Image:     data.Image,
+		CreatedAt: data.CreatedAt,
+	}
+
+	return result, nil
 }
 
 func (u *UserService) GetByEmail(ctx context.Context, email string) (dto.UserDto, error) {

@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 type UserDto struct {
 	Id       int    `json:"id"`
 	Name     string `json:"name"`
@@ -17,4 +19,13 @@ type UserResponse struct {
 type UserData struct {
 	Id    int    `json:"id"`
 	Email string `json:"email"`
+}
+
+type UserById struct {
+	Id        int       `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Image     string    `json:"image"`
+	Password  string    `json:"-"`
+	CreatedAt time.Time `json:"created_at"`
 }
