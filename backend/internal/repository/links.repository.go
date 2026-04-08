@@ -44,29 +44,11 @@ func (r *LinksRepository) CreateShortLinks(ctx context.Context, userID int, orig
 		return model.Link{}, fmt.Errorf("CreateShortLinks collect: %w", err)
 	}
 
-	return link, nil
-}
-
-func (r *LinksRepository) GetShortLinks(ctx context.Context, slug string) (model.Link, error) {
-
-	query := `
-		SELECT id, user_id, original_url, slug, created_at, click_count
-		FROM links
-		WHERE slug = $1
-	`
-
-	rows, err := r.db.Query(ctx, query, slug)
-	if err != nil {
-		return model.Link{}, fmt.Errorf("GetShortLinks query: %w", err)
-	}
-	defer rows.Close()
-
-	link, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[model.Link])
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return model.Link{}, customerrors.ErrLinkNotFound
+	if r.rdb != nil {
+		keys, _ := r.rdb.Keys(ctx, fmt.Sprintf("links:user:%d:*", userID)).Result()
+		if len(keys) > 0 {
+			r.rdb.Del(ctx, keys...)
 		}
-		return model.Link{}, fmt.Errorf("GetShortLinks collect: %w", err)
 	}
 
 	return link, nil
@@ -75,11 +57,13 @@ func (r *LinksRepository) GetShortLinks(ctx context.Context, slug string) (model
 func (r *LinksRepository) GetAllShortLinks(ctx context.Context, userID int, limit, offset int) ([]model.Link, error) {
 	cachedKey := fmt.Sprintf("links:user:%d:limit:%d:offset:%d", userID, limit, offset)
 
-	valueCache, err := r.rdb.Get(ctx, cachedKey).Result()
-	if err == nil {
-		var links []model.Link
-		if err := json.Unmarshal([]byte(valueCache), &links); err == nil {
-			return links, nil
+	if r.rdb != nil {
+		valueCache, err := r.rdb.Get(ctx, cachedKey).Result()
+		if err == nil {
+			var links []model.Link
+			if err := json.Unmarshal([]byte(valueCache), &links); err == nil {
+				return links, nil
+			}
 		}
 	}
 
@@ -90,13 +74,7 @@ func (r *LinksRepository) GetAllShortLinks(ctx context.Context, userID int, limi
 	ORDER BY id ASC
 	LIMIT $2 OFFSET $3
 	`
-	if r.rdb == nil {
-		return nil, fmt.Errorf("redis client is nil")
-	}
 
-	if r.db == nil {
-		return nil, fmt.Errorf("db is nil")
-	}
 	rows, err := r.db.Query(ctx, query, userID, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("GetAllShortLinks query: %w", err)
@@ -108,28 +86,70 @@ func (r *LinksRepository) GetAllShortLinks(ctx context.Context, userID int, limi
 		return nil, fmt.Errorf("GetAllShortLinks collect: %w", err)
 	}
 
-	if data, err := json.Marshal(links); err == nil {
-		r.rdb.Set(ctx, cachedKey, data, time.Minute*15)
+	if r.rdb != nil {
+		if data, err := json.Marshal(links); err == nil {
+			r.rdb.Set(ctx, cachedKey, data, time.Minute*15)
+		}
 	}
 
 	return links, nil
 }
 
-func (r *LinksRepository) IncrementClick(ctx context.Context, linkID int) error {
-	query := `
-		UPDATE links 
-		SET click_count = click_count + 1 
-		WHERE id = $1
+func (r *LinksRepository) GetAndIncrement(ctx context.Context, slug string) (model.Link, error) {
+	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return model.Link{}, fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// 1. SELECT + lock
+	querySelect := `
+		SELECT id, user_id, original_url, slug, created_at, click_count
+		FROM links
+		WHERE slug = $1
+		FOR UPDATE
 	`
 
-	cmdTag, err := r.db.Exec(ctx, query, linkID)
+	rows, err := tx.Query(ctx, querySelect, slug)
 	if err != nil {
-		return fmt.Errorf("IncrementClick exec: %w", err)
+		return model.Link{}, fmt.Errorf("select query: %w", err)
+	}
+	defer rows.Close()
+
+	link, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[model.Link])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return model.Link{}, customerrors.ErrLinkNotFound
+		}
+		return model.Link{}, fmt.Errorf("collect select: %w", err)
 	}
 
-	if cmdTag.RowsAffected() == 0 {
-		return fmt.Errorf("IncrementClick: no rows updated for linkID %d", linkID)
+	// 2. UPDATE
+	queryUpdate := `
+		UPDATE links
+		SET click_count = click_count + 1
+		WHERE id = $1
+		RETURNING click_count
+	`
+
+	var newClickCount int
+	err = tx.QueryRow(ctx, queryUpdate, link.ID).Scan(&newClickCount)
+	if err != nil {
+		return model.Link{}, fmt.Errorf("update query: %w", err)
 	}
 
-	return nil
+	link.ClickCount = newClickCount
+
+	if err := tx.Commit(ctx); err != nil {
+		return model.Link{}, fmt.Errorf("commit: %w", err)
+	}
+
+	if r.rdb != nil {
+		keys, _ := r.rdb.Keys(ctx, fmt.Sprintf("links:user:%d:*", link.UserID)).Result()
+		if len(keys) > 0 {
+			r.rdb.Del(ctx, keys...)
+		}
+	}
+
+	return link, nil
 }

@@ -54,8 +54,8 @@ func (s *LinksService) CreateShortLinks(ctx context.Context, userID int, req dto
 	}, nil
 }
 
-func (s *LinksService) GetShortLinks(ctx context.Context, slug string) (model.Link, error) {
-	return s.repo.GetShortLinks(ctx, slug)
+func (s *LinksService) GetAndIncrement(ctx context.Context, slug string) (model.Link, error) {
+	return s.repo.GetAndIncrement(ctx, slug)
 }
 
 func (s *LinksService) GetAllShortLinks(ctx context.Context, userID int, limit, offset int) ([]dto.ShortLinksResponse, error) {
@@ -77,8 +77,4 @@ func (s *LinksService) GetAllShortLinks(ctx context.Context, userID int, limit, 
 	}
 
 	return result, nil
-}
-
-func (s *LinksService) IncrementClick(ctx context.Context, linkID int) error {
-	return s.repo.IncrementClick(ctx, linkID)
 }
