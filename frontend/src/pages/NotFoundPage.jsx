@@ -90,7 +90,7 @@ export default function NotFoundPage() {
 
 function Card({ icon, title, desc }) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 w-52 flex-1 min-w-[160px] max-w-[210px]">
+    <div className="bg-white border border-slate-200 rounded-xl p-5 w-52 flex-1 min-w-40 max-w-52.5">
       <div className="mb-3">{icon}</div>
       <p className="text-sm font-semibold text-slate-800 mb-1">{title}</p>
       <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
