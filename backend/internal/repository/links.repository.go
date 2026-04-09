@@ -101,10 +101,6 @@ func (r *LinksRepository) GetAllShortLinks(ctx context.Context, userID int, limi
 		return nil, fmt.Errorf("GetAllShortLinks collect: %w", err)
 	}
 
-	fmt.Println("[DB RESULT]")
-	fmt.Println("USER ID:", userID)
-	fmt.Println("TOTAL LINKS FROM DB:", len(links))
-
 	if r.rdb != nil && len(links) > 0 {
 		data, err := json.Marshal(links)
 		if err != nil {
