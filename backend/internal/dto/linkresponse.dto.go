@@ -14,6 +14,9 @@ type ShortLinksResponse struct {
 type LinksResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
-	Error   string `json:"error,omitempty"`
 	Result  any    `json:"result"`
+	Page    int    `json:"page,omitempty"`
+	Limit   int    `json:"limit,omitempty"`
+	HasNext bool   `json:"has_next,omitempty"`
+	Error   string `json:"error,omitempty"`
 }
