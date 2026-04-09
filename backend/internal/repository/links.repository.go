@@ -12,6 +12,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/virgilIw/koda-b6-final-fase/internal/customerrors"
+	"github.com/virgilIw/koda-b6-final-fase/internal/dto"
 	"github.com/virgilIw/koda-b6-final-fase/internal/model"
 )
 
@@ -202,4 +203,26 @@ func (r *LinksRepository) DeleteLinksById(ctx context.Context, idlinks, userId i
 	}
 
 	return true, nil
+}
+
+func (r *LinksRepository) SearchSlug(ctx context.Context, userID int, slug dto.ShortLinksRequest) (model.Link, error) {
+
+	query := `
+		SELECT id, user_id, slug, original_url, click_count, created_at
+		FROM links
+		WHERE user_id = $1 AND slug = $2
+		LIMIT 1
+	`
+
+	rows, err := r.db.Query(ctx, query, userID, slug.Slug)
+	if err != nil {
+		return model.Link{}, err
+	}
+
+	result, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[model.Link])
+	if err != nil {
+		return model.Link{}, err
+	}
+
+	return result, nil
 }
