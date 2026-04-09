@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
@@ -10,6 +10,8 @@ import { PersistGate } from "redux-persist/integration/react";
 import PrivateRoute from "./routes/PrivateRoute";
 import LinksPage from "./pages/LinksPage";
 import MainLayout from "./layout/MainLayout";
+import ProfilePage from "./pages/Profile";
+import CreateLinkPage from "./pages/CreateLinkPage";
 
 const router = createBrowserRouter([
   {
@@ -25,7 +27,19 @@ const router = createBrowserRouter([
       },
       {
         path: "/links",
+        element: <Navigate to="/links/page/1" />,
+      },
+      {
+        path: "/analytics",
+        element: <CreateLinkPage />,
+      },
+      {
+        path: "/links/page/:page",
         element: <LinksPage />,
+      },
+      {
+        path: "/profile",
+        element: <ProfilePage />,
       },
     ],
   },

@@ -1,6 +1,6 @@
 import React from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "../redux/slices/auth.slice";
 
@@ -15,8 +15,10 @@ export default function LoginPage() {
   });
 
   const auth = useSelector((state) => state.auth);
-
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const from = location.state?.from?.pathname || "/";
 
   const dispatch = useDispatch();
 
@@ -73,12 +75,12 @@ export default function LoginPage() {
           success: false,
         }));
 
-        navigate("/");
+        navigate(from, { replace: true });
       }, 3000);
 
       return () => clearTimeout(timer);
     }
-  }, [form.success, navigate]);
+  }, [form.success, navigate, from]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-gray-100 via-gray-200 to-gray-100">
       <div className="absolute top-6 left-8 text-sm text-gray-400">

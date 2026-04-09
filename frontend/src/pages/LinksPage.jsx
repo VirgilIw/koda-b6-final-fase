@@ -1,17 +1,20 @@
 import React from "react";
 import { Link2, Copy, Trash2 } from "lucide-react";
 import { useSelector } from "react-redux";
+import { useParams, useNavigate } from "react-router";
 
 export default function LinksPage() {
   const token = useSelector((state) => state.auth.token);
 
-  const [page, setPage] = React.useState(1);
+  const { page } = useParams();
+  const navigate = useNavigate();
+
+  const currentPage = Number(page) || 1;
   const limit = 4;
 
   const [links, setLinks] = React.useState([]);
-  const [totalPages, setTotalPages] = React.useState(1);
+  const [hasNext, setHasNext] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
-
   const [copiedId, setCopiedId] = React.useState(null);
 
   React.useEffect(() => {
@@ -20,25 +23,18 @@ export default function LinksPage() {
         setLoading(true);
 
         const res = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/api/links?page=${page}&limit=${limit}`,
+          `${import.meta.env.VITE_BASE_URL}/api/links?page=${currentPage}&limit=${limit}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          },
+          }
         );
 
         const data = await res.json();
 
-        console.log("DATA:", data);
-
         setLinks(data.result || []);
-
-        if (data.total) {
-          setTotalPages(Math.ceil(data.total / limit));
-        } else {
-          setTotalPages(1);
-        }
+        setHasNext(data.has_next);
       } catch (err) {
         console.error(err);
       } finally {
@@ -46,25 +42,26 @@ export default function LinksPage() {
       }
     };
 
-    fetchLinks();
-  }, [page, token]);
+    if (token) {
+      fetchLinks();
+    }
+  }, [currentPage, token]);
 
   const handleNext = () => {
-    if (page < totalPages) {
-      setPage((prev) => prev + 1);
+    if (hasNext) {
+      navigate(`/links/page/${currentPage + 1}`);
     }
   };
 
   const handlePrev = () => {
-    if (page > 1) {
-      setPage((prev) => prev - 1);
+    if (currentPage > 1) {
+      navigate(`/links/page/${currentPage - 1}`);
     }
   };
 
   const handleCopy = async (url, id) => {
     await navigator.clipboard.writeText(url);
     setCopiedId(id);
-
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -85,6 +82,26 @@ export default function LinksPage() {
         year: "numeric",
       })
       .toUpperCase();
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/links/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.ok) {
+        setLinks((prev) => prev.filter((link) => link.id !== id));
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (loading) {
@@ -149,7 +166,10 @@ export default function LinksPage() {
                   {copiedId === link.id ? "Copied!" : <Copy size={16} />}
                 </button>
 
-                <button className="rounded-md bg-gray-100 p-2 text-red-500 hover:bg-red-100">
+                <button
+                  onClick={() => handleDelete(link.id)}
+                  className="rounded-md bg-gray-100 p-2 text-red-500 hover:bg-red-100"
+                >
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -158,16 +178,15 @@ export default function LinksPage() {
         })}
       </div>
 
+      {/* Pagination */}
       <div className="mt-6 flex justify-between text-sm text-gray-500">
-        <button onClick={handlePrev} disabled={page === 1}>
+        <button onClick={handlePrev} disabled={currentPage === 1}>
           ← Prev
         </button>
 
-        <span>
-          {page} of {totalPages}
-        </span>
+        <span>Page {currentPage}</span>
 
-        <button onClick={handleNext} disabled={page === totalPages}>
+        <button onClick={handleNext} disabled={!hasNext}>
           Next →
         </button>
       </div>
