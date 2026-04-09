@@ -59,7 +59,7 @@ func (r *LinksRepository) GetAllShortLinks(ctx context.Context, userID int, limi
 	cachedKey := fmt.Sprintf("links:user:%d:limit:%d:offset:%d", userID, limit, offset)
 
 	if r.rdb == nil {
-		fmt.Println("REDIS NOT INITIALIZED ❌")
+		fmt.Println("REDIS NOT INITIALIZED")
 	} else {
 		fmt.Println("REDIS READY")
 		fmt.Println("CHECK REDIS KEY:", cachedKey)
