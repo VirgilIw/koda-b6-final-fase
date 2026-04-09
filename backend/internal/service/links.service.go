@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 
@@ -90,4 +91,22 @@ func (s *LinksService) DeleteLinksById(ctx context.Context, idLinks, userId int)
 	}
 
 	return nil
+}
+
+func (s *LinksService) SearchSlug(ctx context.Context, userID int, req dto.ShortLinksRequest) (model.Link, error) {
+
+	if req.Slug == "" {
+		return model.Link{}, errors.New("slug is required")
+	}
+
+	result, err := s.repo.SearchSlug(ctx, userID, req)
+	if err != nil {
+		// data tidak ditemukan, query tetap jalan
+		if errors.Is(err, pgx.ErrNoRows) {
+			return model.Link{}, errors.New("link not found")
+		}
+		return model.Link{}, err
+	}
+
+	return result, nil
 }
