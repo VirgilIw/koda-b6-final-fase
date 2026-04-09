@@ -22,7 +22,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get paginated short links for authenticated user",
+                "description": "Get paginated short links for authenticated user (forward pagination using has_next)",
                 "produces": [
                     "application/json"
                 ],
@@ -48,7 +48,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Links fetched successfully",
+                        "description": "Success response with pagination (page, limit, has_next)",
                         "schema": {
                             "$ref": "#/definitions/dto.LinksResponse"
                         }
@@ -553,8 +553,17 @@ const docTemplate = `{
                 "error": {
                     "type": "string"
                 },
+                "has_next": {
+                    "type": "boolean"
+                },
+                "limit": {
+                    "type": "integer"
+                },
                 "message": {
                     "type": "string"
+                },
+                "page": {
+                    "type": "integer"
                 },
                 "result": {},
                 "success": {
