@@ -95,7 +95,6 @@ export default function CreateLinkPage() {
         </p>
 
         <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-8">
-          {/* Destination URL */}
           <div className="mb-6">
             <label className="mb-2 block text-xs font-semibold text-slate-500 uppercase">
               Destination URL <span className="text-red-400">*</span>
@@ -118,7 +117,6 @@ export default function CreateLinkPage() {
             </div>
           </div>
 
-          {/* Slug */}
           <div className="mb-6">
             <label className="mb-2 block text-xs font-semibold text-slate-500 uppercase">
               Custom Slug
@@ -143,7 +141,6 @@ export default function CreateLinkPage() {
             </div>
           </div>
 
-          {/* Preview */}
           <div className="mb-6 rounded-xl border bg-indigo-50 px-5 py-4">
             <div className="flex items-start gap-3">
               <Eye className="mt-0.5 h-4 w-4 text-indigo-500" />
@@ -156,7 +153,6 @@ export default function CreateLinkPage() {
             </div>
           </div>
 
-          {/* Feedback */}
           {state.error && (
             <p className="mb-4 text-sm text-red-500">{state.error}</p>
           )}
@@ -165,7 +161,6 @@ export default function CreateLinkPage() {
             <p className="mb-4 text-sm text-green-600">{state.success}</p>
           )}
 
-          {/* Short URL result */}
           {state.shortUrl && (
             <div className="mb-4 text-sm text-indigo-600">
               Short URL:
@@ -185,7 +180,6 @@ export default function CreateLinkPage() {
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex items-center gap-4">
             <button
               onClick={handleCreateLink}
@@ -202,7 +196,6 @@ export default function CreateLinkPage() {
           </div>
         </div>
 
-        {/* Info Cards */}
         <div className="grid grid-cols-2 gap-4">
           <InfoCard
             icon={<BarChart2 className="h-5 w-5 text-orange-500" />}
