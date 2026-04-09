@@ -14,5 +14,6 @@ func RouterLinks(r *gin.RouterGroup, c *di.Container) {
 
 	links.POST("", controller.CreateShortLink)
 	links.GET("", controller.GetAllShortLinks)
+	links.GET("/:slug", controller.SearchSlug)
 	links.DELETE("/:id", controller.DeleteLinksById)
 }
