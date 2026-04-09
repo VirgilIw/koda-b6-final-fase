@@ -1,6 +1,8 @@
 import React from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+import { loginSuccess } from "../redux/slices/auth.slice";
 
 export default function LoginPage() {
   const [form, setForm] = React.useState({
@@ -12,6 +14,12 @@ export default function LoginPage() {
     success: false,
   });
 
+  const auth = useSelector((state) => state.auth);
+
+  const navigate = useNavigate();
+
+  const dispatch = useDispatch();
+
   const handleLogin = async () => {
     setForm((prev) => ({
       ...prev,
@@ -20,6 +28,7 @@ export default function LoginPage() {
       success: false,
     }));
 
+    console.log("AUTH FULL:", auth);
     try {
       const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/login`, {
         method: "POST",
@@ -33,12 +42,17 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
-
+      console.log("LOGIN RESPONSE:", data);
       if (!res.ok) {
         throw new Error(data.message || "Login gagal");
       }
 
-      localStorage.setItem("token", data.token);
+      dispatch(
+        loginSuccess({
+          user: data.result.user,
+          token: data.result.token,
+        }),
+      );
 
       setForm((prev) => ({
         ...prev,
@@ -58,12 +72,13 @@ export default function LoginPage() {
           ...prev,
           success: false,
         }));
+
+        navigate("/");
       }, 3000);
 
       return () => clearTimeout(timer);
     }
-  }, [form.success]);
-
+  }, [form.success, navigate]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-gray-100 via-gray-200 to-gray-100">
       <div className="absolute top-6 left-8 text-sm text-gray-400">
@@ -151,7 +166,7 @@ export default function LoginPage() {
         <button
           onClick={handleLogin}
           disabled={form.loading}
-          className="mt-4 w-full rounded-lg bg-linear-to-r from-indigo-600 to-blue-600 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          className="mt-4 w-full rounded-lg bg-linear-to-r from-[#004AC6] to-blue-600 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
         >
           {form.loading ? "Loading..." : "Log In →"}
         </button>
@@ -175,7 +190,10 @@ export default function LoginPage() {
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-400">
           Don’t have an account?
-          <Link to="/register" className="cursor-pointer text-indigo-600 hover:underline">
+          <Link
+            to="/register"
+            className="cursor-pointer text-indigo-600 hover:underline"
+          >
             Sign up
           </Link>
         </p>
