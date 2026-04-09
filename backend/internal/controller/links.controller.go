@@ -36,13 +36,13 @@ func getUserID(ctx *gin.Context) (int, error) {
 
 // GetAllShortLinks godoc
 // @Summary Get all short links
-// @Description Get paginated short links for authenticated user
+// @Description Get paginated short links for authenticated user (forward pagination using has_next)
 // @Tags Links
 // @Security BearerAuth
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Limit per page" default(4)
-// @Success 200 {object} dto.LinksResponse "Links fetched successfully"
+// @Success 200 {object} dto.LinksResponse "Success response with pagination (page, limit, has_next)"
 // @Failure 401 {object} dto.LinksResponse "Unauthorized"
 // @Failure 500 {object} dto.LinksResponse "Internal server error"
 // @Router /api/links [get]
@@ -89,6 +89,9 @@ func (c *LinksController) GetAllShortLinks(ctx *gin.Context) {
 		Success: true,
 		Message: "links fetched successfully",
 		Result:  links,
+		Page:    page,
+		Limit:   limit,
+		HasNext: len(links) == limit,
 	})
 }
 
