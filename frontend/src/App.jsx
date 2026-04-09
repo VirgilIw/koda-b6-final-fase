@@ -7,7 +7,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import store, { persistor } from "./redux/store";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import PrivateRoute from "./components/PrivateRoute";
+import PrivateRoute from "./routes/PrivateRoute";
 import LinksPage from "./pages/LinksPage";
 import MainLayout from "./layout/MainLayout";
 
