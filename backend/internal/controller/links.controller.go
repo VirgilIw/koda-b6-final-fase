@@ -237,3 +237,61 @@ func (c *LinksController) DeleteLinksById(ctx *gin.Context) {
 		Message: "link deleted successfully",
 	})
 }
+
+// SearchSlug godoc
+// @Summary Get link by slug
+// @Description Get a specific short link by slug for authenticated user
+// @Tags Links
+// @Security BearerAuth
+// @Produce json
+// @Param slug path string true "Short link slug"
+// @Success 200 {object} dto.LinksResponse "Success"
+// @Failure 400 {object} dto.LinksResponse "Slug is required"
+// @Failure 401 {object} dto.LinksResponse "Unauthorized"
+// @Failure 404 {object} dto.LinksResponse "Link not found"
+// @Failure 500 {object} dto.LinksResponse "Internal server error"
+// @Router /api/links/{slug} [get]
+func (c *LinksController) SearchSlug(ctx *gin.Context) {
+
+	userID, err := getUserID(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, dto.LinksResponse{
+			Success: false,
+			Message: "unauthorized",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	slugParam := ctx.Param("slug")
+
+	var req dto.ShortLinksRequest
+
+	req.Slug = slugParam
+
+	result, err := c.service.SearchSlug(ctx.Request.Context(), userID, req)
+	if err != nil {
+
+		if errors.Is(err, customerrors.ErrLinkNotFound) {
+			ctx.JSON(http.StatusNotFound, dto.LinksResponse{
+				Success: false,
+				Message: "link not found",
+				Error:   err.Error(),
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, dto.LinksResponse{
+			Success: false,
+			Message: "internal server error",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.LinksResponse{
+		Success: true,
+		Message: "success",
+		Result:  result,
+	})
+}
