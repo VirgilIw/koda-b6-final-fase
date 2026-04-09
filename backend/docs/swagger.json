@@ -118,6 +118,61 @@
                 }
             }
         },
+        "/api/links/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a link by its ID (only owner can delete)",
+                "tags": [
+                    "Links"
+                ],
+                "summary": "Delete link by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Link ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Link deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LinksResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LinksResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LinksResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Link not found or unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LinksResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LinksResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/login": {
             "post": {
                 "description": "Authenticate user with email and password",

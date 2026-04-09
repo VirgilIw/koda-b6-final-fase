@@ -162,6 +162,41 @@ paths:
       summary: Create short link
       tags:
       - Links
+  /api/links/{id}:
+    delete:
+      description: Delete a link by its ID (only owner can delete)
+      parameters:
+      - description: Link ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Link deleted successfully
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "400":
+          description: Invalid ID
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "404":
+          description: Link not found or unauthorized
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete link by id
+      tags:
+      - Links
   /api/login:
     post:
       consumes:
