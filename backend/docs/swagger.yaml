@@ -204,6 +204,43 @@ paths:
       summary: Delete link by id
       tags:
       - Links
+  /api/links/{slug}:
+    get:
+      description: Get a specific short link by slug for authenticated user
+      parameters:
+      - description: Short link slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "400":
+          description: Slug is required
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "404":
+          description: Link not found
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.LinksResponse'
+      security:
+      - BearerAuth: []
+      summary: Get link by slug
+      tags:
+      - Links
   /api/login:
     post:
       consumes:
