@@ -17,6 +17,10 @@ export default function LinksPage() {
   const [loading, setLoading] = React.useState(true);
   const [copiedId, setCopiedId] = React.useState(null);
 
+  const [search, setSearch] = React.useState("");
+  const [result, setResult] = React.useState(null);
+
+  // ================= GET ALL LINKS =================
   React.useEffect(() => {
     const fetchLinks = async () => {
       try {
@@ -47,6 +51,43 @@ export default function LinksPage() {
     }
   }, [currentPage, token]);
 
+  // ================= SEARCH (DEBOUNCE) =================
+  React.useEffect(() => {
+    const delay = setTimeout(() => {
+      if (search) {
+        fetchSearch(search);
+      } else {
+        setResult(null);
+      }
+    }, 500);
+
+    return () => clearTimeout(delay);
+  }, [search]);
+
+  const fetchSearch = async (value) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/links/${value}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        setResult(null);
+        return;
+      }
+
+      const data = await res.json();
+      setResult(data.result);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ================= PAGINATION =================
   const handleNext = () => {
     if (hasNext) {
       navigate(`/links/page/${currentPage + 1}`);
@@ -59,31 +100,14 @@ export default function LinksPage() {
     }
   };
 
+  // ================= COPY =================
   const handleCopy = async (url, id) => {
     await navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const getSlug = (url) => {
-    if (!url) return "";
-    return url.split("/").pop();
-  };
-
-  const DOMAIN = "shrt.link";
-
-  const formatDate = (date) => {
-    if (!date || date.startsWith("0001")) return "-";
-
-    return new Date(date)
-      .toLocaleDateString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-      })
-      .toUpperCase();
-  };
-
+  // ================= DELETE =================
   const handleDelete = async (id) => {
     try {
       const res = await fetch(
@@ -104,9 +128,33 @@ export default function LinksPage() {
     }
   };
 
+  // ================= HELPERS =================
+  const getSlug = (url) => {
+    if (!url) return "";
+    return url.split("/").pop();
+  };
+
+  const DOMAIN = "shrt.link";
+
+  const formatDate = (date) => {
+    if (!date || date.startsWith("0001")) return "-";
+
+    return new Date(date)
+      .toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      })
+      .toUpperCase();
+  };
+
+  // ================= LOADING =================
   if (loading) {
     return <div className="p-8 text-sm text-gray-400">Loading...</div>;
   }
+
+  // ================= DATA SOURCE =================
+  const displayData = search && result ? [result] : links;
 
   return (
     <div className="mx-auto max-w-4xl p-8">
@@ -117,25 +165,29 @@ export default function LinksPage() {
         </p>
       </div>
 
+      {/* SEARCH */}
       <div className="mb-6 flex items-center rounded-lg border px-3 py-2">
         <input
-          placeholder="Search by name or URL..."
+          placeholder="Search by slug..."
           className="w-full text-sm outline-none"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
+      {/* LIST */}
       <div className="space-y-4">
-        {links.length === 0 && (
+        {displayData.length === 0 && (
           <p className="text-sm text-gray-400">No links found</p>
         )}
 
-        {links.map((link) => {
+        {displayData.map((link,id) => {
           const slug = getSlug(link.short_url);
           const displayShort = `${DOMAIN}/${slug}`;
 
           return (
             <div
-              key={link.id}
+              key={id}
               className="flex items-center justify-between rounded-xl border p-4"
             >
               <div>
@@ -178,7 +230,7 @@ export default function LinksPage() {
         })}
       </div>
 
-      {/* Pagination */}
+      {/* PAGINATION */}
       <div className="mt-6 flex justify-between text-sm text-gray-500">
         <button onClick={handlePrev} disabled={currentPage === 1}>
           ← Prev
