@@ -54,6 +54,7 @@ func (r *LinksRepository) CreateShortLinks(ctx context.Context, userID int, orig
 
 	return link, nil
 }
+
 func (r *LinksRepository) GetAllShortLinks(ctx context.Context, userID int, limit, offset int) ([]model.Link, error) {
 
 	cachedKey := fmt.Sprintf("links:user:%d:limit:%d:offset:%d", userID, limit, offset)
@@ -194,6 +195,14 @@ func (r *LinksRepository) DeleteLinksById(ctx context.Context, idlinks, userId i
 
 	if rowsAffected == 0 {
 		return false, nil
+	}
+
+	if r.rdb != nil {
+		keys, _ := r.rdb.Keys(ctx, fmt.Sprintf("links:user:%d:*", userId)).Result()
+		if len(keys) > 0 {
+			fmt.Println("DELETING CACHE KEYS:", keys)
+			r.rdb.Del(ctx, keys...)
+		}
 	}
 
 	return true, nil
