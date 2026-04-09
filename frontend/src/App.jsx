@@ -4,15 +4,30 @@ import RegisterPage from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
-// Dummy page
-function Dashboard() {
-  return <div className="p-10">Dashboard</div>;
-}
+import store, { persistor } from "./redux/store";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+import PrivateRoute from "./components/PrivateRoute";
+import LinksPage from "./pages/LinksPage";
+import MainLayout from "./layout/MainLayout";
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Dashboard />,
+    element: (
+      <PrivateRoute>
+        <MainLayout />
+      </PrivateRoute>
+    ),
+    children: [
+      {
+        path: "/",
+        element: <LandingPage />,
+      },
+      {
+        path: "/links",
+        element: <LinksPage />,
+      },
+    ],
   },
   {
     path: "/login",
@@ -23,17 +38,19 @@ const router = createBrowserRouter([
     element: <RegisterPage />,
   },
   {
-    path: "/landing-page",
-    element: <LandingPage />,
-  },
-    {
     path: "*",
     element: <NotFoundPage />,
   },
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <Provider store={store}>
+      <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
+        <RouterProvider router={router} />
+      </PersistGate>
+    </Provider>
+  );
 }
 
 export default App;
