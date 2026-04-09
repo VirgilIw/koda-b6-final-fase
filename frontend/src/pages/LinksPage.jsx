@@ -20,7 +20,6 @@ export default function LinksPage() {
   const [search, setSearch] = React.useState("");
   const [result, setResult] = React.useState(null);
 
-  // ================= GET ALL LINKS =================
   React.useEffect(() => {
     const fetchLinks = async () => {
       try {
@@ -51,7 +50,6 @@ export default function LinksPage() {
     }
   }, [currentPage, token]);
 
-  // ================= SEARCH (DEBOUNCE) =================
   React.useEffect(() => {
     const delay = setTimeout(() => {
       if (search) {
@@ -62,7 +60,7 @@ export default function LinksPage() {
     }, 500);
 
     return () => clearTimeout(delay);
-  }, [search]);
+  }, [fetchSearch]);
 
   const fetchSearch = async (value) => {
     try {
@@ -87,7 +85,6 @@ export default function LinksPage() {
     }
   };
 
-  // ================= PAGINATION =================
   const handleNext = () => {
     if (hasNext) {
       navigate(`/links/page/${currentPage + 1}`);
@@ -100,14 +97,12 @@ export default function LinksPage() {
     }
   };
 
-  // ================= COPY =================
   const handleCopy = async (url, id) => {
     await navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // ================= DELETE =================
   const handleDelete = async (id) => {
     try {
       const res = await fetch(
@@ -128,7 +123,6 @@ export default function LinksPage() {
     }
   };
 
-  // ================= HELPERS =================
   const getSlug = (url) => {
     if (!url) return "";
     return url.split("/").pop();
@@ -148,12 +142,10 @@ export default function LinksPage() {
       .toUpperCase();
   };
 
-  // ================= LOADING =================
   if (loading) {
     return <div className="p-8 text-sm text-gray-400">Loading...</div>;
   }
 
-  // ================= DATA SOURCE =================
   const displayData = search && result ? [result] : links;
 
   return (
