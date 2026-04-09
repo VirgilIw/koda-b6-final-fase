@@ -78,3 +78,16 @@ func (s *LinksService) GetAllShortLinks(ctx context.Context, userID int, limit, 
 
 	return result, nil
 }
+
+func (s *LinksService) DeleteLinksById(ctx context.Context, idLinks, userId int) error {
+	deleted, err := s.repo.DeleteLinksById(ctx, idLinks, userId)
+	if err != nil {
+		return err
+	}
+
+	if !deleted {
+		return errors.New("link not found or unauthorized")
+	}
+
+	return nil
+}
