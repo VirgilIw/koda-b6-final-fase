@@ -60,7 +60,7 @@ export default function LinksPage() {
     }, 500);
 
     return () => clearTimeout(delay);
-  }, [fetchSearch]);
+  }, [search]);
 
   const fetchSearch = async (value) => {
     try {
