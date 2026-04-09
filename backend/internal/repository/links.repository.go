@@ -140,7 +140,6 @@ func (r *LinksRepository) GetAndIncrement(ctx context.Context, slug string) (mod
 	if err != nil {
 		return model.Link{}, fmt.Errorf("select query: %w", err)
 	}
-	defer rows.Close()
 
 	link, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[model.Link])
 	if err != nil {
@@ -178,4 +177,24 @@ func (r *LinksRepository) GetAndIncrement(ctx context.Context, slug string) (mod
 	}
 
 	return link, nil
+}
+
+func (r *LinksRepository) DeleteLinksById(ctx context.Context, idlinks, userId int) (bool, error) {
+	query := `
+		DELETE FROM links
+		WHERE id = $1 AND user_id = $2
+	`
+
+	result, err := r.db.Exec(ctx, query, idlinks, userId)
+	if err != nil {
+		return false, err
+	}
+
+	rowsAffected := result.RowsAffected()
+
+	if rowsAffected == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }
