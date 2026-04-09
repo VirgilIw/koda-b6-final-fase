@@ -186,3 +186,51 @@ func (c *LinksController) Redirect(ctx *gin.Context) {
 
 	ctx.Redirect(http.StatusFound, link.OriginalURL)
 }
+
+// Delete Link By Id godoc
+// @Summary Delete link by id
+// @Description Delete a link by its ID (only owner can delete)
+// @Tags Links
+// @Security BearerAuth
+// @Param id path int true "Link ID"
+// @Success 200 {object} dto.LinksResponse "Link deleted successfully"
+// @Failure 400 {object} dto.LinksResponse "Invalid ID"
+// @Failure 401 {object} dto.LinksResponse "Unauthorized"
+// @Failure 404 {object} dto.LinksResponse "Link not found or unauthorized"
+// @Failure 500 {object} dto.LinksResponse "Internal server error"
+// @Router /api/links/{id} [delete]
+func (c *LinksController) DeleteLinksById(ctx *gin.Context) {
+	userID, err := getUserID(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, dto.LinksResponse{
+			Success: false,
+			Message: "unauthorized",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	idLinks, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, dto.LinksResponse{
+			Success: false,
+			Message: "invalid id",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	if err := c.service.DeleteLinksById(ctx.Request.Context(), idLinks, userID); err != nil {
+		ctx.JSON(http.StatusNotFound, dto.LinksResponse{
+			Success: false,
+			Message: "link not found or unauthorized",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.LinksResponse{
+		Success: true,
+		Message: "link deleted successfully",
+	})
+}
