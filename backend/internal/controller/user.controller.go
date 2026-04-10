@@ -176,6 +176,7 @@ func (h *UserController) UpdateUserImage(c *gin.Context) {
 		return
 	}
 
+	// tetap boleh cek extension (optional tapi bagus)
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
 		c.JSON(http.StatusBadRequest, dto.UserResponse{
@@ -185,9 +186,29 @@ func (h *UserController) UpdateUserImage(c *gin.Context) {
 		return
 	}
 
-	// validasi MIME (header), cek apakah file beneran atau gak
-	contentType := file.Header.Get("Content-Type")
-	if contentType != "image/jpeg" && contentType != "image/png" {
+	//validasi MIME pakai isi file
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.UserResponse{
+			Success: false,
+			Message: "failed to open file",
+		})
+		return
+	}
+	defer src.Close()
+
+	buffer := make([]byte, 512)
+	_, err = src.Read(buffer)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.UserResponse{
+			Success: false,
+			Message: "invalid file",
+		})
+		return
+	}
+
+	mimeType := http.DetectContentType(buffer)
+	if mimeType != "image/jpeg" && mimeType != "image/png" {
 		c.JSON(http.StatusBadRequest, dto.UserResponse{
 			Success: false,
 			Message: "only jpg and png allowed",
@@ -195,11 +216,12 @@ func (h *UserController) UpdateUserImage(c *gin.Context) {
 		return
 	}
 
-	fileName := uuid.New().String() + ext
+	src.Seek(0, 0)
 
-	// simpan ke uploads/
+	fileName := uuid.New().String() + ext
 	filePath := fmt.Sprintf("uploads/%s", fileName)
 
+	// tetap pakai SaveUploadedFile (biar simple)
 	if err := c.SaveUploadedFile(file, filePath); err != nil {
 		c.JSON(http.StatusInternalServerError, dto.UserResponse{
 			Success: false,
