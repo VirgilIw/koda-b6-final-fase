@@ -25,6 +25,6 @@ WORKDIR /app
 COPY --from=build /workspace/backend  /app
 
 # APLIKASI INI JALAN DI PORT 
-EXPOSE 8888 
+EXPOSE 8887 
 
 ENTRYPOINT [ "/app/backend" ]
