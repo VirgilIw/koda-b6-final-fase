@@ -1,0 +1,61 @@
+services:
+  pg:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: shortlink_db
+    networks:
+      - webapps
+
+  redis:
+    image: redis:8.6.1-trixie
+    command: ["redis-server", "--requirepass", "gil123"]
+    networks:
+      - webapps
+
+  backend:
+    container_name: backend-virgil
+    image: ghcr.io/virgiliw/shortlink_be:latest
+    environment:
+      PORT: 8887
+      DB_HOST: pg
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: 123456
+      DB_NAME: shortlink_db
+      DB_SSLMODE: disable
+      SECRET_KEY: 2KFNiZI6Gc8YbHxRxdZvXkfQuMu4FlV8XGk/tSgogwE=
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: gil123
+    expose:
+      - "8887"
+    depends_on:
+      - pg
+      - redis
+    networks:
+      - webapps
+
+  frontend:
+    container_name: web-virgil
+    image: ghcr.io/virgiliw/shortlink_fe:latest
+    expose:
+      - "80"
+    networks:
+      - webapps
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-virgil
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - webapps
+
+networks:
+  webapps:
